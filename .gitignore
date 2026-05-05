@@ -1,0 +1,25 @@
+# Generated analysis outputs
+figures/
+processed/
+ambitious/figures/
+ambitious/processed/
+
+# Large local datasets
+data_2D/
+
+# LaTex build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+texput.log
+report/*.pdf
+ambitious/*.pdf
+
+# Python caches and envs
+__pycache__/
+*.pyc
+.venv/

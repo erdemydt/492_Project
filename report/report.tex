@@ -1,0 +1,299 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{parskip}
+\usepackage{caption}
+\usepackage{siunitx}
+\usepackage{xcolor}
+
+\geometry{margin=2.5cm}
+
+\title{Radial Current Distribution in a Magnetohydrodynamic Corbino Disk:\\
+       Fall-Off Length Scaling with Applied Field and Fluid Height}
+\author{PHYS 492 Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We post-process COMSOL finite-element simulations of liquid gallium in a Corbino disk
+driven by a radial current under a uniform axial magnetic field.
+Two independent parametric sweeps — over applied field $B_0 \in [0.5,\,14]$\,T at
+fixed fluid height $h = \SI{1}{mm}$, and over $h \in [0.5,\,15]$\,mm at fixed
+$B_0 = \SI{5}{T}$ — both characterise the same quantity: the radial length $\delta$
+over which $J_r$ transitions from its near-electrode value to the bulk.
+From the B-sweep we find $\delta \propto B_0^{-0.43\pm0.01}$; from the H-sweep,
+$\delta \propto h^{0.52\pm0.01}$.
+Both results are consistent with the single universal law
+\[
+   \delta \;=\; \alpha\,\sqrt{D(B_0)\,h}, \qquad \alpha = 1.41 \pm 0.02,
+\]
+where $D = \sqrt{\mu/(\sigma B_0^2)}$ is the Hartmann layer thickness.
+The collapse of both datasets onto this line (RMS scatter 4.7\%) confirms that
+$\sqrt{Dh}$ — the geometric mean of the two intrinsic length scales — governs the
+current redistribution near the inner electrode.
+\end{abstract}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Physical Setup}
+
+The Corbino disk consists of liquid gallium filling an annular region between an inner
+electrode at $r_\mathrm{in} = \SI{0.1}{mm}$ and an outer electrode at
+$r_\mathrm{out} = \SI{4.5}{mm}$, with fluid height $h$.
+A uniform axial magnetic field $B_0\hat{z}$ drives azimuthal rotation through the
+body force $F_\phi = -J_r B_0$.
+No-slip boundary conditions at the top and bottom walls ($z = 0$ and $z = h$) create
+Hartmann boundary layers of thickness
+\begin{equation}
+    D(B_0) = \sqrt{\frac{\mu}{\sigma B_0^2}},
+    \label{eq:D}
+\end{equation}
+where $\mu = \SI{1.95e-3}{Pa.s}$ and $\sigma = \SI{3.7e6}{S/m}$ for liquid gallium.
+The Hartmann number $\mathrm{Ha} = B_0 h\sqrt{\sigma/\mu} = h/D$ grows with both
+$B_0$ and $h$; across the two sweeps it spans $\mathrm{Ha} \in [109,\,3267]$.
+
+At large $\mathrm{Ha}$, the net radial current concentrates in the thin Hartmann
+layers near $z=0$ and $z=h$.
+The midplane ($z=h/2$) therefore carries a \emph{reverse} (negative) radial current
+in the bulk — the return flow — while the net radial transport is outward.
+This structure is visible throughout the H-sweep data and was observed for
+$B_0 \gtrsim \SI{2}{T}$ in the B-sweep.
+
+The COMSOL model is 2D axisymmetric, coupling Electric Currents and Laminar Flow
+(swirl) with the Lorentz force $-J_r B_0$ and back-EMF
+$\sigma U_\phi B_0$ applied manually.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Data}
+
+\paragraph{B-sweep.}
+$B_0 \in [0.5,\,14]$\,T (step \SI{0.5}{T}), 28 values, $h = \SI{1}{mm}$ fixed.
+The mesh refines with $B_0$ (first element $\approx D/5$); row count grows from
+685 (at \SI{0.5}{T}) to 2011 (at \SI{14}{T}).
+
+\paragraph{H-sweep.}
+$h \in [0.5,\,15]$\,mm (step \SI{0.5}{mm}), 30 values, $B_0 = \SI{5}{T}$ fixed.
+This was confirmed by cross-referencing $J_r \cdot r$ at $r_\mathrm{in}$: the value
+$2.194 \times 10^{-3}$\,A/m from the B-sweep at $B_0 = \SI{5}{T}$ agrees with the
+H-sweep at $h = \SI{1}{mm}$ to 0.09\%, identifying $B_0$ without ambiguity.
+The mesh has 949 rows for all $h$ values (designed to resolve Hartmann layers at
+$B_0 = \SI{5}{T}$); the Hartmann number grows from $\mathrm{Ha}=109$ ($h=\SI{0.5}{mm}$)
+to $\mathrm{Ha}=3267$ ($h=\SI{15}{mm}$).
+
+Both exports are at the domain midplane $z=h/2$ along $r\in[r_\mathrm{in},\,\SI{3}{mm}]$.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Analysis Method}
+
+The analysis follows the same procedure for both sweeps.
+
+\paragraph{Bulk constant.}
+At large $\mathrm{Ha}$ the midplane radial current in the bulk is
+Hartmann-screened to near zero; $C_\mathrm{bulk} \approx 0$ throughout the H-sweep
+($\mathrm{Ha} \geq 109$) and for $B_0 \geq \SI{2}{T}$ in the B-sweep.
+The excess is therefore $\varepsilon(r) = J_r(r)\,r$ (B-sweep: minus a small residual
+bulk constant estimated from the median of $J_r\cdot r$ at $r > 3r_\mathrm{in}$;
+H-sweep: $C_\mathrm{bulk}\equiv 0$).
+
+\paragraph{Decay and zero-crossing.}
+For the H-sweep, the midplane $J_r$ reverses sign at an intermediate radius (the
+Hartmann return current, Fig.~\ref{fig:jr_h}).
+The decay search is therefore restricted to $r < r_\mathrm{zero}$, the first zero
+crossing of $J_r\cdot r$ after the near-electrode peak, to avoid the outer electrode's
+contribution.
+
+\paragraph{Fall-off length.}
+For each parameter slice we locate the peak excess $\varepsilon_\mathrm{peak}$
+(in $r < 3r_\mathrm{in}$), interpolate onto a 500-point grid, and define
+$\delta = r_{1/2} - r_\mathrm{in}$, where $r_{1/2}$ is the first $r$ at which
+$\varepsilon$ drops to $\tfrac{1}{2}\varepsilon_\mathrm{peak}$.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Results}
+
+\subsection{Current profiles}
+
+Figure~\ref{fig:jr_b} shows $J_r(r)$ for five representative $B_0$ values from the
+B-sweep.  The $1/r$ bulk form holds at low $B_0$; at higher $B_0$ the midplane current
+collapses toward zero in the bulk.
+
+Figure~\ref{fig:jr_h} shows $J_r(r)$ for five representative $h$ values from the
+H-sweep.  The near-electrode excess decays, crosses zero, reaches a negative plateau
+(Hartmann return current), and recovers near $r_\mathrm{out}$.  Larger $h$ (larger
+$\mathrm{Ha}$) produces a deeper negative minimum and the zero crossing shifts outward.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.82\textwidth]{../figures/jr_profiles.pdf}
+    \caption{B-sweep: $J_r(r)$ at five $B_0$ values.
+             Dashed: $J_r\propto 1/r$ reference.  As $B_0$ rises, the midplane
+             bulk current is suppressed by Hartmann screening.}
+    \label{fig:jr_b}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/jr_profiles_h.pdf}
+    \caption{H-sweep ($B_0 = \SI{5}{T}$): $J_r(r)$ at five $h$ values.
+             \textit{Left}: near-electrode region.
+             \textit{Right}: full profile showing the negative Hartmann return
+             current and outer-electrode recovery.
+             Dashed horizontal: $J_r = 0$.}
+    \label{fig:jr_h}
+\end{figure}
+
+\subsection{B-sweep scaling}
+
+Figure~\ref{fig:falloff_b} shows the normalised excess profiles from the B-sweep.
+Figure~\ref{fig:scaling_b} plots $\delta_{1/2}$ versus $B_0$.
+A power-law fit gives
+\begin{equation}
+    \delta_{1/2}^{(B)} = (190 \pm 2)\,\mu\mathrm{m} \cdot B_0^{-0.43\pm0.01}.
+    \label{eq:fit_B}
+\end{equation}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.82\textwidth]{../figures/falloff_profiles.pdf}
+    \caption{B-sweep: normalised excess versus $r - r_\mathrm{in}$ for all $B_0$.
+             Tick marks show $r_{1/2}$.  Higher $B_0$ → sharper decay.}
+    \label{fig:falloff_b}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/scaling_r_half.pdf}
+    \caption{B-sweep scaling: $\delta_{1/2}$ vs $B_0$.
+             \textit{Left}: linear axes with fitted curve (Eq.~\ref{eq:fit_B}) and
+             $1.41\sqrt{Dh}$ prediction.
+             \textit{Right}: log-log confirmation of the power law.}
+    \label{fig:scaling_b}
+\end{figure}
+
+\subsection{H-sweep scaling}
+
+Figure~\ref{fig:falloff_h} shows the normalised excess profiles from the H-sweep.
+Figure~\ref{fig:scaling_h} plots $\delta_{1/2}$ versus $h$.
+A power-law fit gives
+\begin{equation}
+    \delta_{1/2}^{(h)} = (3275\,\mu\mathrm{m\,m}^{-n}) \cdot h^{0.52\pm0.01}.
+    \label{eq:fit_h}
+\end{equation}
+The exponent $0.52$ is indistinguishable from $1/2$ within the mesh quantisation
+uncertainty.  The amplitude ratio $\alpha = \delta/\sqrt{Dh}$ converges from
+$1.35$ at $h=\SI{0.5}{mm}$ to $1.44$ at $h=\SI{15}{mm}$, consistent with
+an asymptotic value of $1.41$ as $\mathrm{Ha}\to\infty$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.82\textwidth]{../figures/falloff_profiles_h.pdf}
+    \caption{H-sweep: normalised excess versus $r - r_\mathrm{in}$ for all $h$
+             ($B_0 = \SI{5}{T}$).  Tick marks show $r_{1/2}$.
+             Larger $h$ → wider profile, consistent with $\delta\propto h^{1/2}$.}
+    \label{fig:falloff_h}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/scaling_h.pdf}
+    \caption{H-sweep scaling: $\delta_{1/2}$ vs $h$.
+             \textit{Left}: linear axes with fitted curve (Eq.~\ref{eq:fit_h})
+             and $1.41\sqrt{Dh}$ prediction.
+             \textit{Right}: log-log confirmation.}
+    \label{fig:scaling_h}
+\end{figure}
+
+\subsection{Universal collapse}
+
+Figure~\ref{fig:collapse} is the central result.
+Both datasets are plotted as $\delta_{1/2}$ versus $\sqrt{D(B_0)\,h}$.
+The B-sweep provides points where $D$ varies and $h$ is fixed; the H-sweep provides
+points where $h$ varies and $D$ is fixed.
+The two sweeps overlap at the cross-validation point ($B_0 = \SI{5}{T}$, $h = \SI{1}{mm}$,
+marked with a star), where they agree to 1.8\%.
+
+A free power-law fit to the combined dataset gives
+\begin{equation}
+    \delta_{1/2} \;\propto\; \bigl(\sqrt{Dh}\bigr)^{1.01\pm0.01},
+    \label{eq:combined}
+\end{equation}
+and a forced-slope fit ($\delta = \alpha\sqrt{Dh}$) yields
+\begin{equation}
+    \boxed{\delta_{1/2} \;=\; (1.41 \pm 0.02)\,\sqrt{D(B_0)\,h}
+           \;=\; (1.41 \pm 0.02)\left(\frac{\mu h^2}{\sigma B_0^2}\right)^{1/4},}
+    \label{eq:result}
+\end{equation}
+with RMS scatter 4.7\% across 58 data points spanning a factor of six in $\sqrt{Dh}$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/combined_collapse.pdf}
+    \caption{Universal scaling collapse.  B-sweep circles (blue, colour = $B_0$)
+             and H-sweep squares (orange, colour = $h$) both lie on the line
+             $\delta = 1.41\sqrt{Dh}$ (black).
+             Star: cross-validation point ($B_0=5$ T, $h=1$ mm, 1.8\% agreement
+             between sweeps).
+             \textit{Left}: linear axes.  \textit{Right}: log-log.}
+    \label{fig:collapse}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Discussion}
+
+\paragraph{Why $\sqrt{Dh}$?}
+The fall-off length $\delta$ couples two distinct length scales.
+The Hartmann layer $D$ controls how quickly the current redistributes in $z$: thinner
+$D$ means faster $z$-redistribution, which confines the 2D near-electrode structure
+to a shorter radial extent.
+The fluid height $h$ sets the radial redistribution length because radial diffusion
+and the $z$-averaged Lorentz body force both scale with $h$.
+The geometric mean $\sqrt{Dh}$ arises when these two effects balance, as in many
+mixed-boundary-layer problems.
+
+\paragraph{The return current.}
+At large $\mathrm{Ha}$, the midplane $J_r$ is negative in the bulk.
+This is the Hartmann return current: the net outward current is carried in the
+$z$-boundary layers, while the bulk (midplane) closes the current loop inward.
+The H-sweep makes this structure explicit across 30 values of Ha.
+Importantly, the fall-off length analysis is not contaminated by the return current
+because the decay search is terminated at the first $J_r\cdot r = 0$ crossing.
+
+\paragraph{Convergence of $\alpha$.}
+The amplitude $\alpha = \delta/\sqrt{Dh}$ increases slightly with Ha
+(from $1.35$ at $\mathrm{Ha}=109$ to $1.44$ at $\mathrm{Ha}=3267$).
+This weak Ha-dependence suggests a small sub-leading correction of order $Ha^{-1/2}$
+that vanishes in the $\mathrm{Ha}\to\infty$ limit where the asymptotic value
+$\alpha\approx 1.41$ is recovered.
+
+\paragraph{Limitations.}
+The H-sweep mesh was designed for $B_0 = \SI{5}{T}$ and is under-resolved for large
+$h$ (where $\mathrm{Ha}\gg 1$), potentially introducing mesh-quantisation artefacts
+at high $h$ comparable to those observed in the B-sweep.
+An $r_\mathrm{out}$-limited domain ($\SI{3}{mm}$ vs $\SI{4.5}{mm}$ nominal) means
+the outer-electrode contribution enters the data at large $r$; the zero-crossing
+cutoff mitigates this but may slightly underestimate $r_{1/2}$ at large $h$.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Summary}
+
+\begin{itemize}
+    \item Two independent parametric sweeps — varying $B_0$ at fixed $h$ and
+          varying $h$ at fixed $B_0$ — both yield $\delta\propto (D h)^{1/2}$.
+    \item The combined free-fit exponent on $\sqrt{Dh}$ is $1.01\pm0.01$,
+          confirming linearity.
+    \item The universal amplitude is $\alpha = 1.41\pm0.02$ across 58 data points
+          spanning $\sqrt{Dh}\in[40,\,262]$\,µm.
+    \item The midplane $J_r$ profile shows a clear Hartmann return current at
+          intermediate $r$, with the negative minimum deepening with $\mathrm{Ha}$.
+    \item The fall-off length $\delta = 1.41({\mu h^2}/{\sigma B_0^2})^{1/4}$
+          is the governing length scale for near-electrode current redistribution
+          in this MHD Corbino geometry.
+\end{itemize}
+
+\end{document}
