@@ -1,30 +1,38 @@
-# stock_model — multi-model next-day return prediction
+# stock_model — return prediction, significance testing, volatility forecasting
 
-A small, honest pipeline that trains several models to predict the **next
-day's stock return** and compares them with a leakage-free walk-forward
-backtest.
+A small, honest pipeline with three leakage-free walk-forward tracks:
+predict next-day return *direction* (mostly noise), test whether any
+backtest edge is **real or luck**, and forecast **volatility** (where a
+genuine signal exists).
 
 > ⚠️ **Educational only. Not financial advice. This will not make you
 > rich.** Daily returns are overwhelmingly noise; near-efficient markets
-> mean any real edge is tiny and fragile. Backtests systematically
-> *overstate* live results (overfitting, regime change, slippage, fees,
-> taxes). Do not trade real money based on this code.
+> mean any real direction edge is tiny and fragile. Backtests
+> systematically *overstate* live results (overfitting, regime change,
+> slippage, fees, taxes). Do not trade real money based on this code.
 
 ## What it does
 
 1. **Data** (`data.py`) — live prices via `yfinance`, falling back to a
-   local CSV cache, then to a deterministic synthetic series so the
-   pipeline always runs offline.
-2. **Features** (`features.py`) — strictly causal technical features
-   (lagged returns, MA ratios, volatility, RSI, momentum, volume z-score).
+   local CSV cache, then a deterministic synthetic series so it always
+   runs offline.
+2. **Features** (`features.py`) — strictly causal technical features.
    Label = next-day return.
-3. **Models** (`models.py`) — naive persistence baseline, Ridge,
-   RandomForest, GradientBoosting, an MLP, and a PyTorch **LSTM** on
-   feature sequences. All share one `fit`/`predict` interface.
-4. **Backtest** (`backtest.py`) — expanding-window walk-forward: train
-   only on the past, scale with train-only statistics, predict the next
-   contiguous segment. A long/flat strategy with per-trade transaction
-   costs is compared against buy-and-hold.
+3. **Return models** (`models.py`) — naive persistence, Ridge,
+   RandomForest, GradientBoosting, MLP, and a PyTorch **LSTM**.
+4. **Return backtest** (`backtest.py`) — expanding-window walk-forward,
+   train-only scaling, long/flat strategy with per-trade costs vs
+   buy-and-hold.
+5. **Significance** (`significance.py`) — the apparent backtest "winner"
+   is almost always overfit. Block-bootstrap CI + one-sided p-value for
+   Sharpe > 0, a paired bootstrap for "beats buy-and-hold per day", and a
+   block-**permutation** test that destroys the prediction↔return
+   alignment to build a proper *luck* null. Block methods preserve the
+   serial correlation that i.i.d. resampling ignores.
+6. **Volatility** (`volatility.py`) — return *size* clusters and is
+   forecastable. Predicts forward `horizon`-day realized vol with
+   NaiveVol, EWMA (RiskMetrics), HAR (Corsi-style), GradientBoosting and
+   a fitted **GARCH(1,1)**. Scored with RMSE, MAE, QLIKE and R².
 
 ## Run
 
@@ -33,23 +41,27 @@ pip install -r stock_model/requirements.txt
 python -m stock_model.main --ticker AAPL --period 5y --folds 5
 ```
 
-Outputs:
+Outputs (`stock_model/figures/`, `stock_model/processed/`):
 
-- `stock_model/figures/equity_curves.pdf` — out-of-sample equity per model
-- `stock_model/figures/model_edge.pdf` — directional accuracy vs a coin flip
-- `stock_model/processed/metrics.csv` — RMSE, directional accuracy, total
-  return, Sharpe, max drawdown per model
+- `equity_curves.pdf`, `metrics.csv` — return backtest
+- `model_edge.pdf`, `significance.csv` — edge vs a coin flip + luck tests
+- `volatility_forecast.pdf`, `volatility_metrics.csv` — vol track
 
 ## How to read the results
 
-- **Directional accuracy near 50%** is the expected, honest outcome on
-  real data. A model that "wins" the backtest has usually overfit; only
-  a robust, persistent edge across many tickers and out-of-sample years
-  is even weak evidence of skill.
-- `Naive(persistence)` and `BuyAndHold` are the references. If the fancy
-  models cannot consistently beat both *after costs*, they add no value —
-  which is the usual, expected result.
+- **Return track:** directional accuracy near 50% is the expected, honest
+  outcome. Any "winning" model is usually overfit.
+- **Significance:** for the return strategies, expect `p(sharpe<=0)` and
+  `perm_p(luck)` to be large (≳0.1) and the Sharpe CI to straddle zero —
+  i.e. *not distinguishable from luck*. That is the point: it stops you
+  fooling yourself with a lucky backtest.
+- **Volatility:** expect a clearly **positive R²** and `skill_vs_naive`
+  (HAR/GARCH typically beat the naive baseline on QLIKE). This real,
+  measurable signal — in stark contrast to the ~0 return edge — is what
+  legitimately drives risk management and position sizing. It is *not* a
+  price-prediction money machine.
 
 This sandbox blocks Yahoo Finance, so runs here use the synthetic
-generator (clearly labelled in the output). Run it on a networked machine
-for real tickers.
+generator (clearly labelled in the output). It has realistic volatility
+clustering, so the vol track is meaningful offline; run on a networked
+machine for real tickers.

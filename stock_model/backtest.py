@@ -42,7 +42,12 @@ def _strategy(signal: np.ndarray, fwd_ret: np.ndarray, cost_bps: float):
 
 
 def walk_forward(models, X, y, prices, n_folds=5, cost_bps=5.0, test_frac=0.4):
-    """Return (metrics_df, equity_curves dict, oos_index)."""
+    """Return (metrics_df, equity_curves, oos_index, details).
+
+    `details` carries the raw out-of-sample series the significance test
+    resamples: per-model daily strategy returns, per-model predictions,
+    the forward returns, and the buy-and-hold daily series.
+    """
     X_arr = X.to_numpy(dtype=float)
     y_arr = y.to_numpy(dtype=float)
     n = len(X_arr)
@@ -89,11 +94,13 @@ def walk_forward(models, X, y, prices, n_folds=5, cost_bps=5.0, test_frac=0.4):
         }
     )
 
+    daily_returns = {"BuyAndHold": bh_daily}
     for name, pred in oos_pred.items():
         rmse = float(np.sqrt(np.mean((pred - fwd_ret) ** 2)))
         dir_acc = float((np.sign(pred) == np.sign(fwd_ret)).mean())
         daily, equity = _strategy(pred, fwd_ret, cost_bps)
         curves[name] = equity
+        daily_returns[name] = daily
         rows.append(
             {
                 "model": name,
@@ -106,4 +113,9 @@ def walk_forward(models, X, y, prices, n_folds=5, cost_bps=5.0, test_frac=0.4):
         )
 
     metrics = pd.DataFrame(rows).set_index("model")
-    return metrics, curves, prices.index[oos_slice]
+    details = {
+        "daily_returns": daily_returns,
+        "predictions": oos_pred,
+        "fwd_ret": fwd_ret,
+    }
+    return metrics, curves, prices.index[oos_slice], details
